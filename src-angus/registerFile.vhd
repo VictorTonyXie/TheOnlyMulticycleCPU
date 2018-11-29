@@ -20,7 +20,7 @@ architecture Behavioral of registerFile is
 begin
   process(clk)
   begin
-    if clk = '1' and clk'event then
+    if rising_edge(clk) then
       if WriteReg = '1' then
         --write to Register
         regManager(conv_integer(nd)) <= di;
