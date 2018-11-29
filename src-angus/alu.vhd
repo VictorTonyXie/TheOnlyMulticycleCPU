@@ -49,7 +49,7 @@ begin
 			--minus
 			--BEQZ BNEZ BTEQZ BTNEZ CMP CMPI SLTI SLTUI SRA SUBU
 			output <= input_a - input_b;
-			if input_a - input_b = "0000000000000000" =>
+			if input_a - input_b = "0000000000000000" then
 				zero := 1;
 			end if;
 		when "010" =>
@@ -63,11 +63,11 @@ begin
 		when "100" =>
 			--sll
 			--SLL
-			output <= input_a SLL input_b;
+			output <= to_stdlogicvector(to_bitvector(input_a) sll conv_integer(input_b));
 		when "101" =>
 			--sra
 			--SRA
-			output <= input_a SRA input_b;
+			output <= to_stdlogicvector(to_bitvector(input_a) sra conv_integer(input_b));
 		when "110" =>
 			--SLTI STLUI
 			if input_a < input_b then
@@ -78,6 +78,6 @@ begin
 		when others =>
 			--MUST NOT HAPPEN
 			output <= "1010101010101010";
-	end case;
+  end case
 	zeroflag <= zero;
 end Behavioral;
