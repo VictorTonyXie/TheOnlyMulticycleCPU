@@ -147,6 +147,7 @@ begin
 					ChooseALUOp <= "000";
 					--end init signals
 					
+					--default state
 					state <= execute;
 					
 					--SignExtend
@@ -155,22 +156,32 @@ begin
 							--B
 							SignExtend <= "11011";
 							WritePC <= '1';
+							ChooseALUOp <= "000";--Choose ADD
+							ChooseALUSrcA <= "01";--Choose PC
+							ChooseALUSrcB <= "101";--Choose SE(immediate) << 1
 							ChoosePCSrc <= "01";--PC <- ALUR
 							state <= instruction_fetch;
 						when "00100" =>
 							--BEQZ
 							SignExtend <= "11000";
+							ChooseALUOp <= "000";--Choose ADD
+							ChooseALUSrcA <= "01";--Choose PC
+							ChooseALUSrcB <= "101";--Choose SE(immediate) << 1
 							WriteRA <= '1';
 							ChoosePCSrc <= "10";--PC <- RA
 							state <= execute;
 						when "00101" =>
 							--BNEQ
 							SignExtend <= "11000";
+							ChooseALUOp <= "000";
+							ChooseALUSrcA <= "01";--Choose PC
+							ChooseALUSrcB <= "101";--Choose SE(immediate) << 1
 							WriteRA <= '1';
 							ChoosePCSrc <= "10";--PC <- RA
 							state <= execute;
 						when "00110" =>
 							--SLL SRA
+							state <= execute;
 							case instruction(1 downto 0) is
 								when "00" =>
 									--SLL
@@ -183,15 +194,19 @@ begin
 						when "01000" =>
 							--ADDIU3
 							SignExtend <= "10100";
+							state <= execute;
 						when "01001" =>
 							--ADDIU
 							SignExtend <= "11000";
+							state <= execute;
 						when "01010" =>
 							--SLTI
 							SignExtend <= "11000";
+							state <= execute;
 						when "01011" =>
 							--SLTUI
 							SignExtend <= "01000";
+							state <= execute;
 						when "01100" =>
 							--ADDSP BTEQZ BTNEZ MTSP SW_RS
 							case instruction(10 downto 8) is
@@ -210,7 +225,7 @@ begin
 									ChoosePCSrc <= "10";--Choose ALUR
 									ChooseALUOp <= "000";--Choose ADD
 									ChooseALUSrcA <= "01";--Choose PC
-									ChooseALUSrcB <= "100";--Choose SE(immediate)
+									ChooseALUSrcB <= "101";--Choose SE(immediate) << 1
 									WritePC <= not BranchT;
 									state <= instruction_fetch;
 								when "001" =>
@@ -220,11 +235,12 @@ begin
 									ChoosePCSrc <= "10";--Choose ALUR
 									ChooseALUOp <= "000";--Choose ADD
 									ChooseALUSrcA <= "01";--Choose PC
-									ChooseALUSrcB <= "100";--Choose SE(immediate)
+									ChooseALUSrcB <= "101";--Choose SE(immediate) << 1
 									WritePC <= BranchT;
 									state <= instruction_fetch;
 								when "100" =>
 									--MTSP
+									state <= execute;
 								when "010" =>
 									--SW_RS
 									SignExtend <= "11000";
@@ -241,10 +257,11 @@ begin
 							SignExtend <= "01000";
 							ChooseND <= "00";--Choose R[rx]
 							ChooseDI <= "101";--Choose ZE(immediate)
-							state <= instruction_fetch;
+							state <= write_reg;--now the ZE(immediate) is not ready
 						when "01110" =>
 							--CMPI
 							SignExtend <= "11000";
+							state <= execute;
 						when "10010" =>
 							--LW_SP
 							SignExtend <= "11000";
@@ -256,6 +273,7 @@ begin
 						when "10011" =>
 							--LW
 							SignExtend <= "10101";
+							state <= execute;
 						when "11010" =>
 							--SW_SP
 							SignExtend <= "11000";
@@ -267,8 +285,10 @@ begin
 						when "11011" =>
 							--SW
 							SignExtend <= "10101";
+							state <= execute;
 						when "11100" =>
 							--ADDU SUBU
+							state <= execute;
 							case instruction(1 downto 0) is
 								when "01" =>
 									--ADDU
@@ -281,15 +301,19 @@ begin
 							case instruction(4 downto 0) is
 								when "01100" =>
 									--AND
+									state <= execute;
 								when "01010" =>
 									--CMP
+									state <= execute;
 								when "00000" =>
 									--JR MFPC
 									case instruction(7 downto 5) is
 										when "110" =>
 											--JR
+											state <= execute;
 										when "010" =>
 											--MFPC
+											WriteReg <= '1';
 											ChooseND <= "00";--Choose R[rx]
 											ChooseDI <= "010";--Choose PC
 											state <= instruction_fetch;
@@ -297,6 +321,7 @@ begin
 									end case;
 								when "01101" =>
 									--OR
+									state <= execute;
 								when others => null;
 							end case;
 						when "11110" =>
@@ -309,11 +334,37 @@ begin
 									state <= instruction_fetch;
 								when "00001" =>
 									--MTIH
+									state <= execute;
 								when others => null;
 							end case;
 						when others => null;
 					end case;
 				when execute =>
+					--init signals
+					WritePC <= '0';
+					WriteMem <= '0';
+					WriteIR <= '0';
+					WriteReg <= '0';
+					WriteT <= '0';
+					WriteIH <= '0';
+					WriteSP <= '0';
+					WriteRA <= '0';
+					
+					ChooseAddr <= "00";
+					ChooseWrite <= "00";
+					ChooseND <= "00";
+					ChooseDI <= "000";
+					SignExtend <= "00000";
+					ChooseSP <= '0';
+					ChoosePCSrc <= "00";
+					ChooseALUSrcA <= "00";
+					ChooseALUSrcB <= "000";
+					ChooseALUOp <= "000";
+					--end init signals
+					
+					--default state
+					state <= mem_control;
+					
 					case instruction(15 downto 11) is
 						when "00010" =>
 							--B
@@ -393,6 +444,7 @@ begin
 									--MTSP
 									ChooseSP <= '1';--Choose R[rx]
 									WriteSP <= '1';
+									state <= instruction_fetch;
 								when "010" =>
 									--SW_RS
 								when others => null;
@@ -475,7 +527,7 @@ begin
 									end case;
 								when "01101" =>
 									--OR
-									ChooseALUOp <= "011";--Choose AND
+									ChooseALUOp <= "011";--Choose OR
 									ChooseALUSrcA <= "10";--Choose R[rx]
 									ChooseALUSrcB <= "001";--Choose R[ry]
 									WriteRA <= '1';
@@ -496,6 +548,31 @@ begin
 						when others => null;
 					end case;
 				when mem_control =>
+					--init signals
+					WritePC <= '0';
+					WriteMem <= '0';
+					WriteIR <= '0';
+					WriteReg <= '0';
+					WriteT <= '0';
+					WriteIH <= '0';
+					WriteSP <= '0';
+					WriteRA <= '0';
+					
+					ChooseAddr <= "00";
+					ChooseWrite <= "00";
+					ChooseND <= "00";
+					ChooseDI <= "000";
+					SignExtend <= "00000";
+					ChooseSP <= '0';
+					ChoosePCSrc <= "00";
+					ChooseALUSrcA <= "00";
+					ChooseALUSrcB <= "000";
+					ChooseALUOp <= "000";
+					--end init signals
+					
+					--default state
+					state <= write_reg;
+					
 					case instruction(15 downto 11) is
 						when "00010" =>
 							--B
@@ -536,6 +613,7 @@ begin
 									ChooseAddr <= "10";--Choose ALUR: SP + SE(immediate)
 									ChooseWrite <= "00";--Choose RA
 									WriteMem <= '1';
+									state <= instruction_fetch;
 								when others => null;
 							end case;
 						when "01101" =>
@@ -603,6 +681,29 @@ begin
 						when others => null;
 					end case;
 				when write_reg =>
+					--init signals
+					WritePC <= '0';
+					WriteMem <= '0';
+					WriteIR <= '0';
+					WriteReg <= '0';
+					WriteT <= '0';
+					WriteIH <= '0';
+					WriteSP <= '0';
+					WriteRA <= '0';
+					
+					ChooseAddr <= "00";
+					ChooseWrite <= "00";
+					ChooseND <= "00";
+					ChooseDI <= "000";
+					SignExtend <= "00000";
+					ChooseSP <= '0';
+					ChoosePCSrc <= "00";
+					ChooseALUSrcA <= "00";
+					ChooseALUSrcB <= "000";
+					ChooseALUOp <= "000";
+					--end init signals
+					
+					--default state
 					state <= instruction_fetch;
 					
 					case instruction(15 downto 11) is
@@ -611,24 +712,29 @@ begin
 						when "00100" =>
 							--BEQZ
 							WritePC <= not BranchZF;--Branch when R[rx]=0 <=> ZF = 0
+							state <= instruction_fetch;
 						when "00101" =>
 							--BNEQ
 							WritePC <= BranchZF;--Branch when R[rx]!=0 <=> ZF != 0
+							state <= instruction_fetch;
 						when "00110" =>
 							--SLL SRA
 							WriteReg <= '1';
 							ChooseND <= "00";--Choose R[rx]
 							ChooseDI <= "000";--Choose RA(R[ry] SLL/SRA ALUSrcB)
+							state <= instruction_fetch;
 						when "01000" =>
 							--ADDIU3
 							WriteReg <= '1';
 							ChooseND <= "01";--Choose R[ry]
 							ChooseDI <= "000";--Choose RA(R[rx] ADD SE(immediate))
+							state <= instruction_fetch;
 						when "01001" =>
 							--ADDIU
 							WriteReg <= '1';
 							ChooseND <= "00";--Choose R[rx]
 							ChooseDI <= "000";--Choose RA(R[rx] ADD SE(immediate))
+							state <= instruction_fetch;
 						when "01010" =>
 							--SLTI
 						when "01011" =>
@@ -650,6 +756,8 @@ begin
 							end case;
 						when "01101" =>
 							--LI
+							WriteReg <= '1';
+							state <= instruction_fetch;
 						when "01110" =>
 							--CMPI
 						when "10010" =>
