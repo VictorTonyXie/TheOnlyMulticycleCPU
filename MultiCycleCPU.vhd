@@ -31,7 +31,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity MultiCycleCPU is
 	Port(
-		clk: in std_logic;
+		Clk: in std_logic;
 		ram_addr: out std_logic_vector(17 downto 0);
 		ram_data: inout std_logic_vector(15 downto 0);
 		we_l: out std_logic;
@@ -45,7 +45,27 @@ architecture Behavioral of MultiCycleCPU is
 		rst, clk: in std_logic;
 		BranchT, BranchZF: in std_logic;
 		instruction: in std_logic_vector(15 downto 0);
-		light: out std_logic_vector(15 downto 0)
+		light: out std_logic_vector(15 downto 0);
+		
+		WritePC: out std_logic;
+		WriteMem: out std_logic;
+		WriteIR: out std_logic;
+		WriteReg: out std_logic;
+		WriteT: out std_logic;
+		WriteIH: out std_logic;
+		WriteSP: out std_logic;
+		WriteRA: out std_logic;
+
+		ChooseAddr: out std_logic_vector(1 downto 0);
+		ChooseWrite: out std_logic_vector(1 downto 0);
+		ChooseND: out std_logic_vector(1 downto 0);
+		ChooseDI: out std_logic_vector(2 downto 0);
+		SignExtend: out std_logic_vector(4 downto 0);
+		ChooseSP: out std_logic;
+		ChoosePCSrc: out std_logic_vector(1 downto 0);
+		ChooseALUSrcA: out std_logic_vector(1 downto 0);
+		ChooseALUSrcB: out std_logic_vector(2 downto 0);
+		ChooseALUOp: out std_logic_vector(2 downto 0)
 	);
 	end component;
 	
@@ -209,6 +229,14 @@ architecture Behavioral of MultiCycleCPU is
 	--rx ry rz of 16 bits
 	signal rx16, ry16, rz16: std_logic_vector(15 downto 0);
 begin
+	--constant
+	all_zeros <= "0000000000000000";
+	all_ones <= "1111111111111111";
+	logic_zero <= '0';
+	logic_one <= '1';
+	always_two <= "0000000000000010";
+	always_eight <= "0000000000001000";
+	
 	--equal
 	TIn <= "000000000000000" & ZF;
 	rx16 <= "0000000000000" & IROut(10 downto 8);
@@ -224,11 +252,11 @@ begin
 	IH: SpecRegister port map(WriteIH, Clk, RegAOut, IHOut);
 	SP: SpecRegister port map(WriteSP, Clk, SPIn, SPOut);
 	T: SpecRegister port map(WriteT, Clk, TIn, TOut);
-	RA: SpecRegister port map(WriteSP, Clk, RAIn, RAOut);
+	RA: SpecRegister port map(WriteRA, Clk, RAIn, RAOut);
 	
 	--mux
-	MuxAddr: mux4to1 port map(PCOut, RAOut, RAIn, all_zeros, ChooseAddr);
-	MuxWrite: mux4to1 port map(RAOut, RegAOut, RegBOut, all_zeros, ChooseWrite);
+	MuxAddr: mux4to1 port map(PCOut, RAOut, RAIn, all_zeros, ChooseAddr, MemAddr);
+	MuxWrite: mux4to1 port map(RAOut, RegAOut, RegBOut, all_zeros, ChooseWrite, MemToWrite);
 	MuxND: mux4to1 port map(rx16, ry16, rz16, all_zeros, ChooseND, CNDOut);
 	MuxDI: mux8to1 port map(RAOut, IHOut, PCOut, RegBOut, DROut, SEImmediate, all_zeros, all_zeros, ChooseDI, CDIOut);
 	MuxALUSrcA: mux4to1 port map(SPOut, PCOut, RegAOut, RegBOut, ChooseALUSrcA, CALUSrcAOut);
@@ -250,7 +278,10 @@ begin
 	ALUPart: alu port map(CALUSrcAOut, CALUSrcBOut, ChooseALUOp, ZF, RAIn);
 	
 	--Controller
-	CtrlPart: Controller port map(logic_one, Clk, Tout(0), ZF, IROut, light);
+	CtrlPart: Controller port map(logic_one, Clk, Tout(0), ZF, IROut, light,
+		WritePC, WriteMem, WriteIR, WriteReg, WriteT, WriteIH, WriteSP, WriteRA,
+		ChooseAddr, ChooseWrite, ChooseND, ChooseDI, SignExtend, ChooseSP, ChoosePCSrc, ChooseALUSrcA, ChooseALUSrcB, ChooseALUOp
+	);
 
 end Behavioral;
 

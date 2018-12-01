@@ -39,14 +39,15 @@ entity SpecRegister is
 end SpecRegister;
 
 architecture Behavioral of SpecRegister is
-	signal Data: std_logic_vector(15 downto 0);
+	--signal Data: std_logic_vector(15 downto 0);
 begin
-	Output <= Data;
+	--Output <= Data;
 
 	process(Clk)
 	begin
-		if rising_edge(Clk) and Enable = '0' then
-			Data <= Input;
+		if rising_edge(Clk) and Enable = '1' then
+			--Data <= Input;
+			Output <= Input;
 		end if;
 	end process;
 
