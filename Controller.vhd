@@ -34,30 +34,31 @@ entity Controller is
 		rst, clk: in std_logic;
 		BranchT, BranchZF: in std_logic;
 		instruction: in std_logic_vector(15 downto 0);
-		light: out std_logic_vector(15 downto 0)
+		light: out std_logic_vector(15 downto 0);
+		
+		WritePC: out std_logic;
+		WriteMem: out std_logic;
+		WriteIR: out std_logic;
+		WriteReg: out std_logic;
+		WriteT: out std_logic;
+		WriteIH: out std_logic;
+		WriteSP: out std_logic;
+		WriteRA: out std_logic;
+
+		ChooseAddr: out std_logic_vector(1 downto 0);
+		ChooseWrite: out std_logic_vector(1 downto 0);
+		ChooseND: out std_logic_vector(1 downto 0);
+		ChooseDI: out std_logic_vector(2 downto 0);
+		SignExtend: out std_logic_vector(4 downto 0);
+		ChooseSP: out std_logic;
+		ChoosePCSrc: out std_logic_vector(1 downto 0);
+		ChooseALUSrcA: out std_logic_vector(1 downto 0);
+		ChooseALUSrcB: out std_logic_vector(2 downto 0);
+		ChooseALUOp: out std_logic_vector(2 downto 0)
 	);
 end Controller;
 
 architecture Behavioral of Controller is
-	signal WritePC: std_logic;
-	signal WriteMem: std_logic;
-	signal WriteIR: std_logic;
-	signal WriteReg: std_logic;
-	signal WriteT: std_logic;
-	signal WriteIH: std_logic;
-	signal WriteSP: std_logic;
-	signal WriteRA: std_logic;
-
-	signal ChooseAddr: std_logic_vector(1 downto 0);
-	signal ChooseWrite: std_logic_vector(1 downto 0);
-	signal ChooseND: std_logic_vector(1 downto 0);
-	signal ChooseDI: std_logic_vector(2 downto 0);
-	signal SignExtend: std_logic_vector(4 downto 0);
-	signal ChooseSP: std_logic;
-	signal ChoosePCSrc: std_logic_vector(1 downto 0);
-	signal ChooseALUSrcA: std_logic_vector(1 downto 0);
-	signal ChooseALUSrcB: std_logic_vector(2 downto 0);
-	signal ChooseALUOp: std_logic_vector(2 downto 0);
 
 	type ctrl_states is (
 		instruction_fetch,
