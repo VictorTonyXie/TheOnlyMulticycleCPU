@@ -1,20 +1,20 @@
 ----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date:    19:14:47 11/29/2018 
--- Design Name: 
--- Module Name:    mux8to1 - Behavioral 
--- Project Name: 
--- Target Devices: 
--- Tool versions: 
--- Description: 
+-- Company:
+-- Engineer:
 --
--- Dependencies: 
+-- Create Date:    19:14:47 11/29/2018
+-- Design Name:
+-- Module Name:    mux8to1 - Behavioral
+-- Project Name:
+-- Target Devices:
+-- Tool versions:
+-- Description:
 --
--- Revision: 
+-- Dependencies:
+--
+-- Revision:
 -- Revision 0.01 - File Created
--- Additional Comments: 
+-- Additional Comments:
 --
 ----------------------------------------------------------------------------------
 library IEEE;
@@ -47,7 +47,7 @@ architecture Behavioral of mux8to1 is
 begin
 	if enable = '0' then
 		output <= "0000000000000000";
-	else 
+	else
 		case control_signal is
 			when "000" =>
 				output <= data0;
@@ -70,4 +70,3 @@ begin
 		end case;
 	end if;
 end Behavioral;
-
