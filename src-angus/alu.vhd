@@ -1,5 +1,7 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 entity alu is
     Port ( input_a : in  STD_LOGIC_VECTOR (15 downto 0);
@@ -10,7 +12,7 @@ entity alu is
 end alu;
 
 architecture Behavioral of alu is
-	variable zero_mark : STD_LOGIC := 1;
+	shared variable zero_mark : STD_LOGIC := '1';
 begin
   process
   begin
@@ -24,9 +26,9 @@ begin
   			--BEQZ BNEZ BTEQZ BTNEZ CMP CMPI SLTI SLTUI SRA SUBU
   			output <= input_a - input_b;
   			if input_a - input_b = "0000000000000000" then
-  				zero_mark := 0;
+  				zero_mark := '0';
   			else
-          zero_mark := 1;
+          zero_mark := '1';
         end if;
   		when "010" =>
   			--and
@@ -48,10 +50,10 @@ begin
   			--SLTI STLUI
   			if input_a < input_b then
   				output <= "1111111111111111";
-          zero_mark := 1;
+          zero_mark := '1';
   			else
   				output <= "0000000000000000";
-          zero_mark := 0;
+          zero_mark := '0';
   			end if;
   		when others =>
   			--MUST NOT HAPPEN

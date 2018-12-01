@@ -1,6 +1,8 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.std_logic_arith.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
 
 entity extender is
     Port ( imm : in  STD_LOGIC_VECTOR (10 downto 0);
@@ -9,8 +11,8 @@ entity extender is
 end extender;
 
 architecture Behavioral of extender is
-  variable extendType : integer := 0;
-  variable extendLength : integer := 0;
+  shared variable extendType : integer := 0;
+  shared variable extendLength : integer := 0;
 begin
   process
   begin
