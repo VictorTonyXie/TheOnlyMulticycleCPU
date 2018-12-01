@@ -5,12 +5,12 @@ entity alu is
     Port ( input_a : in  STD_LOGIC_VECTOR (15 downto 0);
            input_b : in  STD_LOGIC_VECTOR (15 downto 0);
            control_signal : in  STD_LOGIC_VECTOR (2 downto 0);
-			     zeroflag : out STD_LOGIC;
+			     zero_markflag : out STD_LOGIC;
            output : out  STD_LOGIC_VECTOR (15 downto 0));
 end alu;
 
 architecture Behavioral of alu is
-	variable zero : STD_LOGIC := 1;
+	variable zero_mark : STD_LOGIC := 1;
 begin
   process
   begin
@@ -24,9 +24,9 @@ begin
   			--BEQZ BNEZ BTEQZ BTNEZ CMP CMPI SLTI SLTUI SRA SUBU
   			output <= input_a - input_b;
   			if input_a - input_b = "0000000000000000" then
-  				zero := 0;
+  				zero_mark := 0;
   			else
-          zero := 1;
+          zero_mark := 1;
         end if;
   		when "010" =>
   			--and
@@ -48,15 +48,15 @@ begin
   			--SLTI STLUI
   			if input_a < input_b then
   				output <= "1111111111111111";
-          zero := 1;
+          zero_mark := 1;
   			else
   				output <= "0000000000000000";
-          zero := 0;
+          zero_mark := 0;
   			end if;
   		when others =>
   			--MUST NOT HAPPEN
   			output <= "1010101010101010";
     end case;
-  	zeroflag <= zero;
+  	zero_markflag <= zero_mark;
   end process;
 end Behavioral;
