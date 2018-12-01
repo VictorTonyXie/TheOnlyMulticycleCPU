@@ -11,16 +11,19 @@ end mux2to1;
 
 architecture Behavioral of mux2to1 is
 begin
-	if enable = '0' then
-		output <= "0000000000000000";
-	else
-		case control_signal is
-			when '0' =>
-				output <= data0;
-			when '1' =>
-				output <= data1;
-			when others =>
-				output <= "0000000000000000";
-		end case;
-	end if;
+  process
+  begin
+  	if enable = '0' then
+  		output <= "0000000000000000";
+  	else
+  		case control_signal is
+  			when '0' =>
+  				output <= data0;
+  			when '1' =>
+  				output <= data1;
+  			when others =>
+  				output <= "0000000000000000";
+  		end case;
+  	end if;
+  end process;
 end Behavioral;
