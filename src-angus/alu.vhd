@@ -4,7 +4,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity alu is
     Port ( input_a : in  STD_LOGIC_VECTOR (15 downto 0);
            input_b : in  STD_LOGIC_VECTOR (15 downto 0);
-           control_signal : in  STD_LOGIC;
+           control_signal : in  STD_LOGIC_VECTOR (2 downto 0);
 			     zeroflag : out STD_LOGIC;
            output : out  STD_LOGIC_VECTOR (15 downto 0));
 end alu;
