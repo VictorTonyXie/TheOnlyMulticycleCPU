@@ -28,9 +28,12 @@ begin
     end if;
   end process;
 
-  if WriteReg = '0' then
-    --Read from register
-    q1 <= regManager(conv_integer(n1));
-    q2 <= regManager(conv_integer(n2));
-  end if;
+  process
+  begin
+    if WriteReg = '0' then
+      --Read from register
+      q1 <= regManager(conv_integer(n1));
+      q2 <= regManager(conv_integer(n2));
+    end if;
+  end process;
 end Behavioral;
