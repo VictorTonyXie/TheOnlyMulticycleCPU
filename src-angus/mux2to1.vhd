@@ -13,7 +13,7 @@ end mux2to1;
 
 architecture Behavioral of mux2to1 is
 begin
-  process
+  process(data0, data1, control_signal)
   begin
 		case control_signal is
 			when '0' =>
