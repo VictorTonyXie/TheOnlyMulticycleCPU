@@ -37,7 +37,7 @@ entity Controller is
 		light: out std_logic_vector(15 downto 0) := "0000000000000000";
 		
 		WritePC: out std_logic := '0';
-		WriteMem: out std_logic := '0';
+		WriteMem: out std_logic_vector(1 downto 0) := "00";
 		WriteIR: out std_logic := '0';
 		WriteReg: out std_logic := '0';
 		WriteT: out std_logic := '0';
@@ -46,7 +46,7 @@ entity Controller is
 		WriteRA: out std_logic := '0';
 
 		ChooseAddr: out std_logic_vector(1 downto 0) := "00";
-		ChooseWrite: out std_logic_vector(1 downto 0) := "00";
+		ChooseWrite: out std_logic_vector(1 downto 0) := "11";
 		ChooseND: out std_logic_vector(1 downto 0) := "00";
 		ChooseDI: out std_logic_vector(2 downto 0) := "000";
 		SignExtend: out std_logic_vector(4 downto 0) := "00000";
@@ -77,7 +77,7 @@ begin
 			state <= instruction_fetch;
 			
 			WritePC <= '0';
-			WriteMem <= '0';
+			WriteMem <= "00";
 			WriteIR <= '0';
 			WriteReg <= '0';
 			WriteT <= '0';
@@ -95,11 +95,11 @@ begin
 			ChooseALUSrcA <= "00";
 			ChooseALUSrcB <= "000";
 			ChooseALUOp <= "000";
-		elsif falling_edge(clk) then
+		elsif rising_edge(clk) then
 			case state is
 				when instruction_fetch =>
 					WritePC <= '1';
-					WriteMem <= '0';
+					WriteMem <= "10";
 					WriteIR <= '1';
 					WriteReg <= '0';
 					WriteT <= '0';
@@ -108,7 +108,7 @@ begin
 					WriteRA <= '0';
 					
 					ChooseAddr <= "00";
-					ChooseWrite <= "00";
+					ChooseWrite <= "11";
 					ChooseND <= "00";
 					ChooseDI <= "000";
 					SignExtend <= "00000";
@@ -119,29 +119,29 @@ begin
 					ChooseALUOp <= "000";
 					
 					case instruction(15 downto 11) is
-						when "00000" =>
-							--shall do nothing
-							state <= instruction_fetch;
-			
-							WritePC <= '0';
-							WriteMem <= '0';
-							WriteIR <= '1';
-							WriteReg <= '0';
-							WriteT <= '0';
-							WriteIH <= '0';
-							WriteSP <= '0';
-							WriteRA <= '0';
-							
-							ChooseAddr <= "00";
-							ChooseWrite <= "00";
-							ChooseND <= "00";
-							ChooseDI <= "000";
-							SignExtend <= "00000";
-							ChooseSP <= '0';
-							ChoosePCSrc <= "00";
-							ChooseALUSrcA <= "00";
-							ChooseALUSrcB <= "000";
-							ChooseALUOp <= "000";
+--						when "00000" =>
+--							--shall do nothing
+--							state <= instruction_fetch;
+--			
+--							WritePC <= '0';
+--							WriteMem <= "00";
+--							WriteIR <= '1';
+--							WriteReg <= '0';
+--							WriteT <= '0';
+--							WriteIH <= '0';
+--							WriteSP <= '0';
+--							WriteRA <= '0';
+--							
+--							ChooseAddr <= "00";
+--							ChooseWrite <= "00";
+--							ChooseND <= "00";
+--							ChooseDI <= "000";
+--							SignExtend <= "00000";
+--							ChooseSP <= '0';
+--							ChoosePCSrc <= "00";
+--							ChooseALUSrcA <= "00";
+--							ChooseALUSrcB <= "000";
+--							ChooseALUOp <= "000";
 						when "00001" =>
 							--NOP
 							state <= instruction_fetch;
@@ -151,7 +151,7 @@ begin
 				when decode =>
 					--init signals
 					WritePC <= '0';
-					WriteMem <= '0';
+					WriteMem <= "00";
 					WriteIR <= '0';
 					WriteReg <= '0';
 					WriteT <= '0';
@@ -160,7 +160,7 @@ begin
 					WriteRA <= '0';
 					
 					ChooseAddr <= "00";
-					ChooseWrite <= "00";
+					ChooseWrite <= "11";
 					ChooseND <= "00";
 					ChooseDI <= "000";
 					SignExtend <= "00000";
@@ -174,6 +174,33 @@ begin
 					--default state
 					state <= execute;
 					
+					
+				when execute =>
+					--init signals
+					WritePC <= '0';
+					WriteMem <= "00";
+					WriteIR <= '0';
+					WriteReg <= '0';
+					WriteT <= '0';
+					WriteIH <= '0';
+					WriteSP <= '0';
+					WriteRA <= '0';
+					
+					ChooseAddr <= "00";
+					ChooseWrite <= "11";
+					ChooseND <= "00";
+					ChooseDI <= "000";
+					SignExtend <= "00000";
+					ChooseSP <= '0';
+					ChoosePCSrc <= "00";
+					ChooseALUSrcA <= "00";
+					ChooseALUSrcB <= "000";
+					ChooseALUOp <= "000";
+					--end init signals
+					
+					--default state
+					state <= mem_control;
+					
 					--SignExtend
 					case instruction(15 downto 11) is
 						when "00010" =>
@@ -182,7 +209,7 @@ begin
 							WritePC <= '1';
 							ChooseALUOp <= "000";--Choose ADD
 							ChooseALUSrcA <= "01";--Choose PC
-							ChooseALUSrcB <= "101";--Choose SE(immediate) << 1
+							ChooseALUSrcB <= "100";--Choose SE(immediate) << 1
 							ChoosePCSrc <= "01";--PC <- ALUR
 							state <= instruction_fetch;
 						when "00100" =>
@@ -190,7 +217,7 @@ begin
 							SignExtend <= "11000";
 							ChooseALUOp <= "000";--Choose ADD
 							ChooseALUSrcA <= "01";--Choose PC
-							ChooseALUSrcB <= "101";--Choose SE(immediate) << 1
+							ChooseALUSrcB <= "100";--Choose SE(immediate) << 1
 							WriteRA <= '1';
 							ChoosePCSrc <= "10";--PC <- RA
 							state <= execute;
@@ -199,7 +226,7 @@ begin
 							SignExtend <= "11000";
 							ChooseALUOp <= "000";
 							ChooseALUSrcA <= "01";--Choose PC
-							ChooseALUSrcB <= "101";--Choose SE(immediate) << 1
+							ChooseALUSrcB <= "100";--Choose SE(immediate) << 1
 							WriteRA <= '1';
 							ChoosePCSrc <= "10";--PC <- RA
 							state <= execute;
@@ -249,7 +276,7 @@ begin
 									ChoosePCSrc <= "10";--Choose ALUR
 									ChooseALUOp <= "000";--Choose ADD
 									ChooseALUSrcA <= "01";--Choose PC
-									ChooseALUSrcB <= "101";--Choose SE(immediate) << 1
+									ChooseALUSrcB <= "100";--Choose SE(immediate) << 1
 									WritePC <= not BranchT;
 									state <= instruction_fetch;
 								when "001" =>
@@ -259,7 +286,7 @@ begin
 									ChoosePCSrc <= "10";--Choose ALUR
 									ChooseALUOp <= "000";--Choose ADD
 									ChooseALUSrcA <= "01";--Choose PC
-									ChooseALUSrcB <= "101";--Choose SE(immediate) << 1
+									ChooseALUSrcB <= "100";--Choose SE(immediate) << 1
 									WritePC <= BranchT;
 									state <= instruction_fetch;
 								when "100" =>
@@ -364,31 +391,6 @@ begin
 							end case;
 						when others => null;
 					end case;
-				when execute =>
-					--init signals
-					WritePC <= '0';
-					WriteMem <= '0';
-					WriteIR <= '0';
-					WriteReg <= '0';
-					WriteT <= '0';
-					WriteIH <= '0';
-					WriteSP <= '0';
-					WriteRA <= '0';
-					
-					ChooseAddr <= "00";
-					ChooseWrite <= "00";
-					ChooseND <= "00";
-					ChooseDI <= "000";
-					SignExtend <= "00000";
-					ChooseSP <= '0';
-					ChoosePCSrc <= "00";
-					ChooseALUSrcA <= "00";
-					ChooseALUSrcB <= "000";
-					ChooseALUOp <= "000";
-					--end init signals
-					
-					--default state
-					state <= mem_control;
 					
 					case instruction(15 downto 11) is
 						when "00010" =>
@@ -575,7 +577,7 @@ begin
 				when mem_control =>
 					--init signals
 					WritePC <= '0';
-					WriteMem <= '0';
+					WriteMem <= "00";
 					WriteIR <= '0';
 					WriteReg <= '0';
 					WriteT <= '0';
@@ -584,7 +586,7 @@ begin
 					WriteRA <= '0';
 					
 					ChooseAddr <= "00";
-					ChooseWrite <= "00";
+					ChooseWrite <= "11";
 					ChooseND <= "00";
 					ChooseDI <= "000";
 					SignExtend <= "00000";
@@ -637,7 +639,7 @@ begin
 									--SW_RS
 									ChooseAddr <= "10";--Choose ALUR: SP + SE(immediate)
 									ChooseWrite <= "00";--Choose RA
-									WriteMem <= '1';
+									WriteMem <= "01";
 									state <= instruction_fetch;
 								when others => null;
 							end case;
@@ -657,13 +659,13 @@ begin
 							--SW_SP
 							ChooseAddr <= "01";--Choose RA
 							ChooseWrite <= "01";--Choose RegA
-							WriteMem <= '1';
+							WriteMem <= "01";
 							state <= instruction_fetch;
 						when "11011" =>
 							--SW
 							ChooseAddr <= "01";--Choose RA
 							ChooseWrite <= "10";--Choose RegB
-							WriteMem <= '1';
+							WriteMem <= "01";
 							state <= instruction_fetch;
 						when "11100" =>
 							--ADDU SUBU
@@ -708,7 +710,7 @@ begin
 				when write_reg =>
 					--init signals
 					WritePC <= '0';
-					WriteMem <= '0';
+					WriteMem <= "00";
 					WriteIR <= '0';
 					WriteReg <= '0';
 					WriteT <= '0';
@@ -717,7 +719,7 @@ begin
 					WriteRA <= '0';
 					
 					ChooseAddr <= "00";
-					ChooseWrite <= "00";
+					ChooseWrite <= "11";
 					ChooseND <= "00";
 					ChooseDI <= "000";
 					SignExtend <= "00000";

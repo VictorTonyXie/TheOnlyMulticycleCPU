@@ -31,7 +31,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity Memorizer is
 	Port(
-		WriteMem: in std_logic;
+		WriteMem: in std_logic_vector(1 downto 0);
 		Addr: in std_logic_vector(15 downto 0);
 		ToRead: out std_logic_vector(15 downto 0) := "0000000000000000";
 		ToWrite: in std_logic_vector(15 downto 0);
@@ -49,16 +49,20 @@ begin
 	
 	ToRead <= RamData;
 
-	process(WriteMem)
+	process(WriteMem, ToWrite)
 	begin
-		if WriteMem = '1' then
+		if WriteMem = "01" then
 			--todo: write memory
 			OE_L <= '1';
 			WE_L <= '0';
 			RamData <= ToWrite;
-		else
+		elsif WriteMem = "10" then
 			--todo: read memory
 			OE_L <= '0';
+			WE_L <= '1';
+			RamData <= "ZZZZZZZZZZZZZZZZ";
+		else
+			OE_L <= '1';
 			WE_L <= '1';
 			RamData <= "ZZZZZZZZZZZZZZZZ";
 		end if;

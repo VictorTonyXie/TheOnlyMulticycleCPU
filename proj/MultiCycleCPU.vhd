@@ -36,25 +36,10 @@ entity MultiCycleCPU is
 		ram_data: inout std_logic_vector(15 downto 0);
 		we_l: out std_logic;
 		oe_l: out std_logic;
+		wrn: out std_logic;
+		rdn: out std_logic
 		
-		pc_in: out std_logic_vector(15 downto 0);
-		alu_srcb: out std_logic_vector(15 downto 0);
-		choose_alusrcb: out std_logic_vector(2 downto 0);
-		ir_in: out std_logic_vector(15 downto 0);
-		ir_out: out std_logic_vector(15 downto 0);
-		sign_extend: out std_logic_vector(4 downto 0);
-		seimm: out std_logic_vector(15 downto 0);
-		nd: out std_logic_vector(2 downto 0);
-		write_reg: out std_logic;
-		
-		r0: out std_logic_vector(15 downto 0);
-		r1: out std_logic_vector(15 downto 0);
-		r2: out std_logic_vector(15 downto 0);
-		r3: out std_logic_vector(15 downto 0);
-		r4: out std_logic_vector(15 downto 0);
-		r5: out std_logic_vector(15 downto 0);
-		r6: out std_logic_vector(15 downto 0);
-		r7: out std_logic_vector(15 downto 0)
+
 	);
 end MultiCycleCPU;
 
@@ -67,7 +52,7 @@ architecture Behavioral of MultiCycleCPU is
 		light: out std_logic_vector(15 downto 0);
 		
 		WritePC: out std_logic;
-		WriteMem: out std_logic;
+		WriteMem: out std_logic_vector(1 downto 0);
 		WriteIR: out std_logic;
 		WriteReg: out std_logic;
 		WriteT: out std_logic;
@@ -97,7 +82,7 @@ architecture Behavioral of MultiCycleCPU is
 	
 	component Memorizer
 	Port(
-		WriteMem: in std_logic;
+		WriteMem: in std_logic_vector(1 downto 0);
 		Addr: in std_logic_vector(15 downto 0);
 		ToRead: out std_logic_vector(15 downto 0);
 		ToWrite: in std_logic_vector(15 downto 0);
@@ -179,16 +164,7 @@ architecture Behavioral of MultiCycleCPU is
 		WriteReg : in STD_LOGIC;
 		clk : in STD_LOGIC;
 		q1 : out STD_LOGIC_VECTOR (15 downto 0);
-		q2 : out STD_LOGIC_VECTOR (15 downto 0);
-		
-		r0: out std_logic_vector(15 downto 0);
-		r1: out std_logic_vector(15 downto 0);
-		r2: out std_logic_vector(15 downto 0);
-		r3: out std_logic_vector(15 downto 0);
-		r4: out std_logic_vector(15 downto 0);
-		r5: out std_logic_vector(15 downto 0);
-		r6: out std_logic_vector(15 downto 0);
-		r7: out std_logic_vector(15 downto 0)
+		q2 : out STD_LOGIC_VECTOR (15 downto 0)
 	);
 	end component;
 	
@@ -207,7 +183,8 @@ architecture Behavioral of MultiCycleCPU is
 	signal WritePC, WriteIR, WriteIH, WriteDR, WriteRegA, WriteRegB, WriteRA, WriteSP, WriteT: std_logic:= '0';
 	
 	--signal for other writing control
-	signal WriteMem, WriteReg: std_logic:= '0';
+	signal WriteReg: std_logic:= '0';
+	signal WriteMem: std_logic_vector(1 downto 0):= "00";
 	
 	--signal for Choos***
 	signal ChooseAddr: std_logic_vector(1 downto 0);
@@ -228,8 +205,10 @@ architecture Behavioral of MultiCycleCPU is
 	signal logic_one: std_logic:= '1';
 	
 	--signal constant
+	signal always_one: std_logic_vector(15 downto 0):= "0000000000000001";
 	signal always_two: std_logic_vector(15 downto 0):= "0000000000000010";
 	signal always_eight: std_logic_vector(15 downto 0):= "0000000000001000";
+	signal always_z: std_logic_vector(15 downto 0):= "ZZZZZZZZZZZZZZZZ";
 	
 	--signal for mux
 	--signal CAddrOut: std_logic_vector(15 downto 0);-- <=> MemAddr
@@ -257,16 +236,6 @@ architecture Behavioral of MultiCycleCPU is
 	--rx ry rz of 16 bits
 	signal rx16, ry16, rz16: std_logic_vector(15 downto 0);
 begin
-	--help signals
-	pc_in <= PCIn;
-	alu_srcb <= CALUSrcBOut;
-	choose_alusrcb <= ChooseALUSrcB;
-	ir_in <= MemToRead;
-	ir_out <= IROut;
-	sign_extend <= SignExtend;
-	seimm <= SEImmediate;
-	nd <= CNDOut(2 downto 0);
-	write_reg <= WriteReg;
 	
 	--constant
 	all_zeros <= "0000000000000000";
@@ -275,6 +244,10 @@ begin
 	logic_one <= '1';
 	always_two <= "0000000000000010";
 	always_eight <= "0000000000001000";
+	always_z <= "ZZZZZZZZZZZZZZZZ";
+	
+	wrn <= '1';
+	rdn <= '1';
 	
 	--equal
 	TIn <= "000000000000000" & ZF;
@@ -295,11 +268,11 @@ begin
 	
 	--mux
 	MuxAddr: mux4to1 port map(PCOut, RAOut, RAIn, all_zeros, ChooseAddr, MemAddr);
-	MuxWrite: mux4to1 port map(RAOut, RegAOut, RegBOut, all_zeros, ChooseWrite, MemToWrite);
+	MuxWrite: mux4to1 port map(RAOut, RegAOut, RegBOut, always_z, ChooseWrite, MemToWrite);
 	MuxND: mux4to1 port map(rx16, ry16, rz16, all_zeros, ChooseND, CNDOut);
 	MuxDI: mux8to1 port map(RAOut, IHOut, PCOut, RegBOut, DROut, SEImmediate, all_zeros, all_zeros, ChooseDI, CDIOut);
 	MuxALUSrcA: mux4to1 port map(SPOut, PCOut, RegAOut, RegBOut, ChooseALUSrcA, CALUSrcAOut);
-	MuxALUSrcB: mux8to1 port map(RegAOut, RegBOut, always_two, always_eight, SEImmediate, ImmediateLeftOne, all_zeros, all_zeros, ChooseALUSrcB, CALUSrcBOut);
+	MuxALUSrcB: mux8to1 port map(RegAOut, RegBOut, always_one, always_eight, SEImmediate, ImmediateLeftOne, all_zeros, all_zeros, ChooseALUSrcB, CALUSrcBOut);
 	MuxSP: mux2to1 port map(RAIn, RegAOut, ChooseSP, SPIn);
 	MuxPCSrc: mux4to1 port map(RegAOut, RAIn, RAOut, all_zeros, ChoosePCSrc, PCIn);
 	
@@ -307,7 +280,7 @@ begin
 	MemControl: Memorizer port map(WriteMem, MemAddr, MemToRead, MemToWrite, ram_addr, ram_data, oe_l, we_l);
 	
 	--RegisterFile
-	RegFile: registerFile port map(IROut(10 downto 8), IROut(7 downto 5), CNDOut(2 downto 0), CDIOut, WriteReg, Clk, RegAIn, RegBIn, r0, r1, r2, r3, r4, r5, r6, r7);
+	RegFile: registerFile port map(IROut(10 downto 8), IROut(7 downto 5), CNDOut(2 downto 0), CDIOut, WriteReg, Clk, RegAIn, RegBIn);
 	
 	--immediate
 	ExtendImm: extender port map(IROut(10 downto 0), SignExtend, SEImmediate);
