@@ -34,7 +34,7 @@ entity SpecRegister is
 		Enable: in std_logic;
 		Clk: in std_logic;
 		Input: in std_logic_vector(15 downto 0);
-		Output: out std_logic_vector(15 downto 0)
+		Output: out std_logic_vector(15 downto 0) := "0000000000000000"
 	);
 end SpecRegister;
 

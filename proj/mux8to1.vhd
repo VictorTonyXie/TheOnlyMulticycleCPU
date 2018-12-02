@@ -13,7 +13,7 @@ entity mux8to1 is
            data6 : in  STD_LOGIC_VECTOR (15 downto 0);
            data7 : in  STD_LOGIC_VECTOR (15 downto 0);
            control_signal : in  STD_LOGIC_VECTOR (2 downto 0);
-           output : out  STD_LOGIC_VECTOR (15 downto 0));
+           output : out  STD_LOGIC_VECTOR (15 downto 0) := "0000000000000000");
 end mux8to1;
 
 architecture Behavioral of mux8to1 is

@@ -7,7 +7,7 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity extender is
     Port ( imm : in  STD_LOGIC_VECTOR (10 downto 0);
            SignExtend : in STD_LOGIC_VECTOR (4 downto 0);
-           output : out  STD_LOGIC_VECTOR (15 downto 0));
+           output : out  STD_LOGIC_VECTOR (15 downto 0) := "0000000000000000");
 end extender;
 
 architecture Behavioral of extender is

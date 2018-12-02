@@ -33,9 +33,9 @@ entity Memorizer is
 	Port(
 		WriteMem: in std_logic;
 		Addr: in std_logic_vector(15 downto 0);
-		ToRead: out std_logic_vector(15 downto 0);
+		ToRead: out std_logic_vector(15 downto 0) := "0000000000000000";
 		ToWrite: in std_logic_vector(15 downto 0);
-		RamAddr: out std_logic_vector(17 downto 0);
+		RamAddr: out std_logic_vector(17 downto 0) := "000000000000000000";
 		RamData: inout std_logic_vector(15 downto 0);
 		OE_L: out std_logic;
 		WE_L: out std_logic
@@ -51,7 +51,7 @@ begin
 
 	process(WriteMem)
 	begin
-		if WriteMem = '0' then
+		if WriteMem = '1' then
 			--todo: write memory
 			OE_L <= '1';
 			WE_L <= '0';
