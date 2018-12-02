@@ -20,7 +20,7 @@ architecture Behavioral of registerFile is
   signal regManager : reg := ("0000000000000000", "0000000000000000", "0000000000000000", "0000000000000000",
   "0000000000000000", "0000000000000000", "0000000000000000", "0000000000000000");
 begin
-  process(clk, di)
+  process(clk, nd, di)
   begin
     if rising_edge(clk) then
       if WriteReg = '1' then
