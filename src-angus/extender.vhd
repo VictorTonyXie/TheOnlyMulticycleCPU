@@ -14,7 +14,7 @@ architecture Behavioral of extender is
   shared variable extendType : integer := 0;
   shared variable extendLength : integer := 0;
 begin
-  process
+  process(imm, SignExtend)
   begin
     extendType := CONV_INTEGER(SignExtend(4));
     extendLength := CONV_INTEGER(SignExtend(3 downto 0));

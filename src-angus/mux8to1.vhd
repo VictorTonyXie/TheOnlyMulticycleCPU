@@ -18,7 +18,7 @@ end mux8to1;
 
 architecture Behavioral of mux8to1 is
 begin
-  process
+  process(data0, data1, data2, data3, data4, data5, data6, data7, control_signal)
   begin
 		case control_signal is
 			when "000" =>
