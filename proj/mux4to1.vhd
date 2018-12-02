@@ -10,7 +10,7 @@ entity mux4to1 is
            data2 : in  STD_LOGIC_VECTOR (15 downto 0);
            data3 : in  STD_LOGIC_VECTOR (15 downto 0);
            control_signal : in  STD_LOGIC_VECTOR (1 downto 0);
-           output : out  STD_LOGIC_VECTOR (15 downto 0));
+           output : out  STD_LOGIC_VECTOR (15 downto 0) := "0000000000000000");
 end mux4to1;
 
 architecture Behavioral of mux4to1 is

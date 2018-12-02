@@ -8,7 +8,7 @@ entity mux2to1 is
     Port ( data0 : in  STD_LOGIC_VECTOR (15 downto 0);
            data1 : in  STD_LOGIC_VECTOR (15 downto 0);
            control_signal : in  STD_LOGIC;
-           output : out  STD_LOGIC_VECTOR (15 downto 0));
+           output : out  STD_LOGIC_VECTOR (15 downto 0) := "0000000000000000");
 end mux2to1;
 
 architecture Behavioral of mux2to1 is

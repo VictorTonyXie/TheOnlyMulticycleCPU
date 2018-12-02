@@ -7,14 +7,14 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 entity extender is
     Port ( imm : in  STD_LOGIC_VECTOR (10 downto 0);
            SignExtend : in STD_LOGIC_VECTOR (4 downto 0);
-           output : out  STD_LOGIC_VECTOR (15 downto 0));
+           output : out  STD_LOGIC_VECTOR (15 downto 0) := "0000000000000000");
 end extender;
 
 architecture Behavioral of extender is
+  shared variable extendType : integer := 0;
+  shared variable extendLength : integer := 0;
 begin
   process(imm, SignExtend)
-    variable extendType : integer := 0;
-    variable extendLength : integer := 0;
   begin
     extendType := CONV_INTEGER(SignExtend(4));
     extendLength := CONV_INTEGER(SignExtend(3 downto 0));
