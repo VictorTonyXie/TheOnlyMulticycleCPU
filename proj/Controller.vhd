@@ -34,27 +34,27 @@ entity Controller is
 		rst, clk: in std_logic;
 		BranchT, BranchZF: in std_logic;
 		instruction: in std_logic_vector(15 downto 0);
-		light: out std_logic_vector(15 downto 0);
+		light: out std_logic_vector(15 downto 0) := "0000000000000000";
 		
-		WritePC: out std_logic;
-		WriteMem: out std_logic;
-		WriteIR: out std_logic;
-		WriteReg: out std_logic;
-		WriteT: out std_logic;
-		WriteIH: out std_logic;
-		WriteSP: out std_logic;
-		WriteRA: out std_logic;
+		WritePC: out std_logic := '0';
+		WriteMem: out std_logic := '0';
+		WriteIR: out std_logic := '0';
+		WriteReg: out std_logic := '0';
+		WriteT: out std_logic := '0';
+		WriteIH: out std_logic := '0';
+		WriteSP: out std_logic := '0';
+		WriteRA: out std_logic := '0';
 
-		ChooseAddr: out std_logic_vector(1 downto 0);
-		ChooseWrite: out std_logic_vector(1 downto 0);
-		ChooseND: out std_logic_vector(1 downto 0);
-		ChooseDI: out std_logic_vector(2 downto 0);
-		SignExtend: out std_logic_vector(4 downto 0);
-		ChooseSP: out std_logic;
-		ChoosePCSrc: out std_logic_vector(1 downto 0);
-		ChooseALUSrcA: out std_logic_vector(1 downto 0);
-		ChooseALUSrcB: out std_logic_vector(2 downto 0);
-		ChooseALUOp: out std_logic_vector(2 downto 0)
+		ChooseAddr: out std_logic_vector(1 downto 0) := "00";
+		ChooseWrite: out std_logic_vector(1 downto 0) := "00";
+		ChooseND: out std_logic_vector(1 downto 0) := "00";
+		ChooseDI: out std_logic_vector(2 downto 0) := "000";
+		SignExtend: out std_logic_vector(4 downto 0) := "00000";
+		ChooseSP: out std_logic := '0';
+		ChoosePCSrc: out std_logic_vector(1 downto 0) := "00";
+		ChooseALUSrcA: out std_logic_vector(1 downto 0) := "00";
+		ChooseALUSrcB: out std_logic_vector(2 downto 0) := "000";
+		ChooseALUOp: out std_logic_vector(2 downto 0) := "000"
 	);
 end Controller;
 
@@ -95,7 +95,7 @@ begin
 			ChooseALUSrcA <= "00";
 			ChooseALUSrcB <= "000";
 			ChooseALUOp <= "000";
-		elsif rising_edge(clk) then
+		elsif falling_edge(clk) then
 			case state is
 				when instruction_fetch =>
 					WritePC <= '1';
@@ -113,12 +113,35 @@ begin
 					ChooseDI <= "000";
 					SignExtend <= "00000";
 					ChooseSP <= '0';
-					ChoosePCSrc <= "00";
-					ChooseALUSrcA <= "00";
-					ChooseALUSrcB <= "000";
+					ChoosePCSrc <= "01";
+					ChooseALUSrcA <= "01";
+					ChooseALUSrcB <= "010";
 					ChooseALUOp <= "000";
 					
 					case instruction(15 downto 11) is
+						when "00000" =>
+							--shall do nothing
+							state <= instruction_fetch;
+			
+							WritePC <= '0';
+							WriteMem <= '0';
+							WriteIR <= '1';
+							WriteReg <= '0';
+							WriteT <= '0';
+							WriteIH <= '0';
+							WriteSP <= '0';
+							WriteRA <= '0';
+							
+							ChooseAddr <= "00";
+							ChooseWrite <= "00";
+							ChooseND <= "00";
+							ChooseDI <= "000";
+							SignExtend <= "00000";
+							ChooseSP <= '0';
+							ChoosePCSrc <= "00";
+							ChooseALUSrcA <= "00";
+							ChooseALUSrcB <= "000";
+							ChooseALUOp <= "000";
 						when "00001" =>
 							--NOP
 							state <= instruction_fetch;
@@ -258,7 +281,8 @@ begin
 							SignExtend <= "01000";
 							ChooseND <= "00";--Choose R[rx]
 							ChooseDI <= "101";--Choose ZE(immediate)
-							state <= write_reg;--now the ZE(immediate) is not ready
+							WriteReg <= '1';
+							state <= instruction_fetch;
 						when "01110" =>
 							--CMPI
 							SignExtend <= "11000";
@@ -309,7 +333,7 @@ begin
 								when "00000" =>
 									--JR MFPC
 									case instruction(7 downto 5) is
-										when "110" =>
+										when "000" =>
 											--JR
 											state <= execute;
 										when "010" =>
@@ -517,7 +541,7 @@ begin
 								when "00000" =>
 									--JR MFPC
 									case instruction(7 downto 5) is
-										when "110" =>
+										when "000" =>
 											--JR
 											WritePC <= '1';
 											ChoosePCSrc <= "00";--Choose RegA
@@ -660,7 +684,7 @@ begin
 								when "00000" =>
 									--JR MFPC
 									case instruction(7 downto 5) is
-										when "110" =>
+										when "000" =>
 											--JR
 										when "010" =>
 											--MFPC
@@ -805,7 +829,7 @@ begin
 								when "00000" =>
 									--JR MFPC
 									case instruction(7 downto 5) is
-										when "110" =>
+										when "000" =>
 											--JR
 										when "010" =>
 											--MFPC

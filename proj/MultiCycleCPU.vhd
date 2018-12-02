@@ -35,7 +35,26 @@ entity MultiCycleCPU is
 		ram_addr: out std_logic_vector(17 downto 0);
 		ram_data: inout std_logic_vector(15 downto 0);
 		we_l: out std_logic;
-		oe_l: out std_logic
+		oe_l: out std_logic;
+		
+		pc_in: out std_logic_vector(15 downto 0);
+		alu_srcb: out std_logic_vector(15 downto 0);
+		choose_alusrcb: out std_logic_vector(2 downto 0);
+		ir_in: out std_logic_vector(15 downto 0);
+		ir_out: out std_logic_vector(15 downto 0);
+		sign_extend: out std_logic_vector(4 downto 0);
+		seimm: out std_logic_vector(15 downto 0);
+		nd: out std_logic_vector(2 downto 0);
+		write_reg: out std_logic;
+		
+		r0: out std_logic_vector(15 downto 0);
+		r1: out std_logic_vector(15 downto 0);
+		r2: out std_logic_vector(15 downto 0);
+		r3: out std_logic_vector(15 downto 0);
+		r4: out std_logic_vector(15 downto 0);
+		r5: out std_logic_vector(15 downto 0);
+		r6: out std_logic_vector(15 downto 0);
+		r7: out std_logic_vector(15 downto 0)
 	);
 end MultiCycleCPU;
 
@@ -160,7 +179,16 @@ architecture Behavioral of MultiCycleCPU is
 		WriteReg : in STD_LOGIC;
 		clk : in STD_LOGIC;
 		q1 : out STD_LOGIC_VECTOR (15 downto 0);
-		q2 : out STD_LOGIC_VECTOR (15 downto 0)
+		q2 : out STD_LOGIC_VECTOR (15 downto 0);
+		
+		r0: out std_logic_vector(15 downto 0);
+		r1: out std_logic_vector(15 downto 0);
+		r2: out std_logic_vector(15 downto 0);
+		r3: out std_logic_vector(15 downto 0);
+		r4: out std_logic_vector(15 downto 0);
+		r5: out std_logic_vector(15 downto 0);
+		r6: out std_logic_vector(15 downto 0);
+		r7: out std_logic_vector(15 downto 0)
 	);
 	end component;
 	
@@ -229,6 +257,17 @@ architecture Behavioral of MultiCycleCPU is
 	--rx ry rz of 16 bits
 	signal rx16, ry16, rz16: std_logic_vector(15 downto 0);
 begin
+	--help signals
+	pc_in <= PCIn;
+	alu_srcb <= CALUSrcBOut;
+	choose_alusrcb <= ChooseALUSrcB;
+	ir_in <= MemToRead;
+	ir_out <= IROut;
+	sign_extend <= SignExtend;
+	seimm <= SEImmediate;
+	nd <= CNDOut(2 downto 0);
+	write_reg <= WriteReg;
+	
 	--constant
 	all_zeros <= "0000000000000000";
 	all_ones <= "1111111111111111";
@@ -268,7 +307,7 @@ begin
 	MemControl: Memorizer port map(WriteMem, MemAddr, MemToRead, MemToWrite, ram_addr, ram_data, oe_l, we_l);
 	
 	--RegisterFile
-	RegFile: registerFile port map(IROut(10 downto 8), IROut(7 downto 5), CNDOut(2 downto 0), CDIOut, WriteReg, Clk, RegAIn, RegBIn);
+	RegFile: registerFile port map(IROut(10 downto 8), IROut(7 downto 5), CNDOut(2 downto 0), CDIOut, WriteReg, Clk, RegAIn, RegBIn, r0, r1, r2, r3, r4, r5, r6, r7);
 	
 	--immediate
 	ExtendImm: extender port map(IROut(10 downto 0), SignExtend, SEImmediate);

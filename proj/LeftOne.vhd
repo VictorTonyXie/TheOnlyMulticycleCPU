@@ -32,7 +32,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity LeftOne is
 	Port(
 		Input: in std_logic_vector(15 downto 0);
-		Output: out std_logic_vector(15 downto 0)
+		Output: out std_logic_vector(15 downto 0) := "0000000000000000"
 	);
 end LeftOne;
 
