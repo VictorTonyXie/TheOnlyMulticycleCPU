@@ -12,9 +12,9 @@ entity alu is
 end alu;
 
 architecture Behavioral of alu is
-	shared variable zero_mark : STD_LOGIC := '1';
 begin
   process(input_a, input_b, control_signal)
+    variable zero_mark : STD_LOGIC := '1';
   begin
   	case control_signal is
   		when "000" =>
