@@ -1,6 +1,8 @@
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.std_logic_arith.ALL;
+use IEEE.STD_LOGIC_ARITH.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
+
 
 entity registerFile is
     Port ( n1 : in STD_LOGIC_VECTOR (2 downto 0);
@@ -28,9 +30,12 @@ begin
     end if;
   end process;
 
-  if WriteReg = '0' then
-    --Read from register
-    q1 <= regManager(conv_integer(n1));
-    q2 <= regManager(conv_integer(n2));
-  end if;
+  process
+  begin
+    if WriteReg = '0' then
+      --Read from register
+      q1 <= regManager(conv_integer(n1));
+      q2 <= regManager(conv_integer(n2));
+    end if;
+  end process;
 end Behavioral;
