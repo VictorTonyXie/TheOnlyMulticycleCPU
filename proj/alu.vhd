@@ -54,11 +54,11 @@ begin
 			when "110" =>
 				--slti
 				output <= res_sub;
-				zero_markflag <= not res_slti(17);
+				zero_markflag <= res_slti(17);
 			when "111" =>
 				--sltui
 				output <= res_sub;
-				zero_markflag <= not res_sltui(17);
+				zero_markflag <= res_sltui(17);
 			when others =>
 				output <= "0000000000000000";
 		end case;
