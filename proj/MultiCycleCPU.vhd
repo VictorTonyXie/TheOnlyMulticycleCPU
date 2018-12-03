@@ -36,10 +36,12 @@ entity MultiCycleCPU is
 		ram_data: inout std_logic_vector(15 downto 0);
 		we_l: out std_logic;
 		oe_l: out std_logic;
+		en_l: out std_logic;
 		wrn: out std_logic;
-		rdn: out std_logic
-		
-
+		rdn: out std_logic;
+		data_ready: in std_logic;
+		tbre: in std_logic;
+		tsre: in std_logic
 	);
 end MultiCycleCPU;
 
@@ -89,7 +91,13 @@ architecture Behavioral of MultiCycleCPU is
 		RamAddr: out std_logic_vector(17 downto 0);
 		RamData: inout std_logic_vector(15 downto 0);
 		OE_L: out std_logic;
-		WE_L: out std_logic
+		WE_L: out std_logic;
+		EN_L: out std_logic;
+		wrn: out std_logic;
+		rdn: out std_logic;
+		data_ready: in std_logic;
+		tbre: in std_logic;
+		tsre: in std_logic
 	);
 	end component;
 	
@@ -246,9 +254,6 @@ begin
 	always_eight <= "0000000000001000";
 	always_z <= "ZZZZZZZZZZZZZZZZ";
 	
-	wrn <= '1';
-	rdn <= '1';
-	
 	--equal
 	TIn <= "000000000000000" & ZF;
 	rx16 <= "0000000000000" & IROut(10 downto 8);
@@ -273,11 +278,11 @@ begin
 	MuxDI: mux8to1 port map(RAOut, IHOut, PCOut, RegBOut, DROut, SEImmediate, all_zeros, all_zeros, ChooseDI, CDIOut);
 	MuxALUSrcA: mux4to1 port map(SPOut, PCOut, RegAOut, RegBOut, ChooseALUSrcA, CALUSrcAOut);
 	MuxALUSrcB: mux8to1 port map(RegAOut, RegBOut, always_one, always_eight, SEImmediate, ImmediateLeftOne, all_zeros, all_zeros, ChooseALUSrcB, CALUSrcBOut);
-	MuxSP: mux2to1 port map(RAIn, RegAOut, ChooseSP, SPIn);
+	MuxSP: mux2to1 port map(RAIn, RegBOut, ChooseSP, SPIn);
 	MuxPCSrc: mux4to1 port map(RegAOut, RAIn, RAOut, all_zeros, ChoosePCSrc, PCIn);
 	
 	--Memorizer
-	MemControl: Memorizer port map(WriteMem, MemAddr, MemToRead, MemToWrite, ram_addr, ram_data, oe_l, we_l);
+	MemControl: Memorizer port map(WriteMem, MemAddr, MemToRead, MemToWrite, ram_addr, ram_data, oe_l, we_l, en_l, wrn, rdn, data_ready, tbre, tsre);
 	
 	--RegisterFile
 	RegFile: registerFile port map(IROut(10 downto 8), IROut(7 downto 5), CNDOut(2 downto 0), CDIOut, WriteReg, Clk, RegAIn, RegBIn);
