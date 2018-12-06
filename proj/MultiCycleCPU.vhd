@@ -31,17 +31,18 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity MultiCycleCPU is
 	Port(
-		Clk: in std_logic;
+		clk_in: in std_logic;
 		ram_addr: out std_logic_vector(17 downto 0);
 		ram_data: inout std_logic_vector(15 downto 0);
 		we_l: out std_logic;
 		oe_l: out std_logic;
 		en_l: out std_logic;
-		wrn: out std_logic;
-		rdn: out std_logic;
+		wrn: inout std_logic;
+		rdn: inout std_logic;
 		data_ready: in std_logic;
 		tbre: in std_logic;
-		tsre: in std_logic
+		tsre: in std_logic;
+		l: out std_logic_vector(15 downto 0):= "0000000000000000"
 	);
 end MultiCycleCPU;
 
@@ -84,6 +85,7 @@ architecture Behavioral of MultiCycleCPU is
 	
 	component Memorizer
 	Port(
+		clk: in std_logic;
 		WriteMem: in std_logic_vector(1 downto 0);
 		Addr: in std_logic_vector(15 downto 0);
 		ToRead: out std_logic_vector(15 downto 0);
@@ -93,8 +95,8 @@ architecture Behavioral of MultiCycleCPU is
 		OE_L: out std_logic;
 		WE_L: out std_logic;
 		EN_L: out std_logic;
-		wrn: out std_logic;
-		rdn: out std_logic;
+		wrn: inout std_logic;
+		rdn: inout std_logic;
 		data_ready: in std_logic;
 		tbre: in std_logic;
 		tsre: in std_logic
@@ -243,7 +245,25 @@ architecture Behavioral of MultiCycleCPU is
 	
 	--rx ry rz of 16 bits
 	signal rx16, ry16, rz16: std_logic_vector(15 downto 0);
+	
+	--signal Clk
+	signal Clk: std_logic:= '1';
+	signal cnt: integer:= 0;
 begin
+	l <= data_ready & "00" & tsre & "00" & tbre & "00" & wrn & "00" & rdn & "0" & WriteMem;
+	
+	Clk <= clk_in;
+--	process(clk_in)
+--	begin
+--		if rising_edge(clk_in) then
+--			if (cnt = 200000) then
+--				Clk <= not Clk;
+--				cnt <= 0;
+--			else
+--				cnt <= cnt + 1;
+--			end if;
+--		end if;
+--	end process;
 	
 	--constant
 	all_zeros <= "0000000000000000";
@@ -282,7 +302,7 @@ begin
 	MuxPCSrc: mux4to1 port map(RegAOut, RAIn, RAOut, all_zeros, ChoosePCSrc, PCIn);
 	
 	--Memorizer
-	MemControl: Memorizer port map(WriteMem, MemAddr, MemToRead, MemToWrite, ram_addr, ram_data, oe_l, we_l, en_l, wrn, rdn, data_ready, tbre, tsre);
+	MemControl: Memorizer port map(Clk, WriteMem, MemAddr, MemToRead, MemToWrite, ram_addr, ram_data, oe_l, we_l, en_l, wrn, rdn, data_ready, tbre, tsre);
 	
 	--RegisterFile
 	RegFile: registerFile port map(IROut(10 downto 8), IROut(7 downto 5), CNDOut(2 downto 0), CDIOut, WriteReg, Clk, RegAIn, RegBIn);

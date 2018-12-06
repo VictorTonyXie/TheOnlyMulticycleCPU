@@ -31,17 +31,18 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity Memorizer is
 	Port(
+		clk: in std_logic;
 		WriteMem: in std_logic_vector(1 downto 0);
 		Addr: in std_logic_vector(15 downto 0);
 		ToRead: out std_logic_vector(15 downto 0) := "0000000000000000";
 		ToWrite: in std_logic_vector(15 downto 0);
 		RamAddr: out std_logic_vector(17 downto 0) := "000000000000000000";
 		RamData: inout std_logic_vector(15 downto 0);
-		OE_L: out std_logic;
-		WE_L: out std_logic;
-		EN_L: out std_logic;
-		wrn: out std_logic;
-		rdn: out std_logic;
+		OE_L: out std_logic:= '1';
+		WE_L: out std_logic:= '1';
+		EN_L: out std_logic:= '1';
+		wrn: inout std_logic:= '1';
+		rdn: inout std_logic:= '1';
 		data_ready: in std_logic;
 		tbre: in std_logic;
 		tsre: in std_logic
@@ -59,78 +60,100 @@ architecture Behavioral of Memorizer is
 		read3,
 		read4,
 		read5,
+		read_done,
 		write0,
 		write1,
 		write2,
 		write3,
 		write4,
 		write5,
+		write_done,
 		done
 	);
 	signal write_state: main_states:= waiting;
 	signal read_state: main_states:= waiting;
 	signal state: main_states:= waiting;
 begin
-	rdn <= rdn_i;
-	wrn <= wrn_i;
-	
-	process(RamData, state)
+	process(RamData, write_state, read_state, Addr, data_ready)
 	begin
-		if (Addr = x"BF01") or (Addr = x"BF00") then
-			case state is
-				when write1 => ToRead <= x"0001";
-				when read1 => ToRead <= x"0002";
-				when others => ToRead <= RamData;
-			end case;
+		if (Addr = x"BF01") then
+			ToRead <= x"0000";
+			if (data_ready = '1') and (read_state = read0) then
+				ToRead(1) <= '1';
+			end if;
+			if (write_state = write0) then
+				ToRead(0) <= '1';
+			end if;
+		elsif (Addr = x"BF00") then
+			ToRead <= RamData;
 		else
 			ToRead <= RamData;
 		end if;
 	end process;
 	
-	process(WriteMem, ToWrite, Addr)
+	wrn <= wrn_i;
+	rdn <= rdn_i;
+			
+	RamAddr <= "00" & Addr;
+	
+	process(clk, WriteMem, Addr, ToWrite, tbre, tsre)
 	begin
-		if (Addr = x"BF01") or (Addr = x"BF00") then
-			EN_L <= '1';
-			WE_L <= '1';
+		if (Addr = x"BF01") then
+			--TESTW/TESTR
 			OE_L <= '1';
-			--judge whether to promote state until being able to s/l com
-			case state is
-				when waiting =>
-					state <= write0;
-				when write0 =>
-					if (tsre = '1') and (tbre = '1') then
-						--can write--state change => toread=0x0001
-						state <= write1;
-					else
-						--cannot write
-						state <= read0;
-					end if;
-				when write1 =>
-					--do SW
-					state <= waiting;
-					wrn_i <= '0';
-					RamData <= ToWrite;
-				when read0 =>
-					if (data_ready = '1') then
-						--can read
-						state <= read1;--state change => toread=0x0002
-						RamData <= "ZZZZZZZZZZZZZZZZ";
-					else
-						--cannot read
-						state <= waiting;
-					end if;
-				when read1 =>
-					--do LW
-					state <= waiting;
+			WE_L <= '1';
+			EN_L <= '1';
+			--to get data_ready and so on
+			--to prepare
+			if (WriteMem = "10") then
+				--state changes only when instuction is lw
+				write_state <= waiting;
+				read_state <= waiting;
+				wrn_i <= '1';
+				rdn_i <= '1';
+				--can read
+				RamData <= "ZZZZZZZZZZZZZZZZ";
+				read_state <= read0;
+				if (tbre = '1') and (tsre = '1') then
+					--can write
+					write_state <= write0;
+				end if;
+			else
+				write_state <= waiting;
+				read_state <= waiting;
+				wrn_i <= '1';
+				rdn_i <= '1';
+			end if;
+		elsif (Addr = x"BF00") then
+			--LW/SW
+			OE_L <= '1';
+			WE_L <= '1';
+			EN_L <= '1';
+			case WriteMem is
+				when "10" =>
+					--to read
+					wrn_i <= '1';
 					rdn_i <= '0';
-				when others => null;
+					if rdn_i = '1' then
+					RamData <= "ZZZZZZZZZZZZZZZZ";
+					end if;
+				when "01" =>
+					--to write
+					if clk'event and clk = '0' then
+					wrn_i <= '0';
+					end if;
+					--wrn_i <= '1';
+					rdn_i <= '1';
+					RamData <= ToWrite;
+				when others =>
+					wrn_i <= '1';
+					rdn_i <= '1';
+					RamData <= "ZZZZZZZZZZZZZZZZ";
 			end case;
 		else
 			EN_L <= '0';
 			rdn_i <= '1';
 			wrn_i <= '1';
-			
-			RamAddr <= "00" & Addr;
 
 			if WriteMem = "01" then
 				--todo: write memory
